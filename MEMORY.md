@@ -12,7 +12,7 @@
 - [x] **Etapa 1:** Layout estático e estilização responsiva.
 - [x] **Etapa 2:** Funções utilitárias (códigos WMO e formatação de datas).
 - [x] **Etapa 3:** Integração da API Open-Meteo com tratamento de erros.
-- [ ] **Etapa 4:** Gerenciamento de estados de UI e exibição do clima atual.
+- [x] **Etapa 4:** Gerenciamento de estados de UI e exibição do clima atual.
 - [ ] **Etapa 5:** Renderização da previsão de 5 dias.
 - [ ] **Etapa 6:** Persistência no localStorage.
 - [ ] **Etapa 7:** Testes automatizados com `node:test`.
