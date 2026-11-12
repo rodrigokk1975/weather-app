@@ -16,4 +16,4 @@
 - [x] **Etapa 5:** Renderização da previsão de 5 dias.
 - [x] **Etapa 6:** Persistência no localStorage.
 - [x] **Etapa 7:** Testes automatizados com `node:test`.
-- [ ] **Etapa 8:** Finalização da documentação e atribuição de dados.
+- [x] **Etapa 8:** Finalização da documentação e atribuição de dados.
