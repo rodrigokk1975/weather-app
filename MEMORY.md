@@ -9,7 +9,7 @@
 
 ## Progresso das Etapas
 - [x] **Etapa 0:** Inicialização da estrutura, `.gitignore`, `package.json`, `docs/PRD.md`, `MEMORY.md` e `README.md` inicial.
-- [ ] **Etapa 1:** Layout estático e estilização responsiva.
+- [x] **Etapa 1:** Layout estático e estilização responsiva.
 - [ ] **Etapa 2:** Funções utilitárias (códigos WMO e formatação de datas).
 - [ ] **Etapa 3:** Integração da API Open-Meteo com tratamento de erros.
 - [ ] **Etapa 4:** Gerenciamento de estados de UI e exibição do clima atual.

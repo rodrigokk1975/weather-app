@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Aplicação de consulta de clima e previsão do tempo em JavaScript puro com a API da Open-Meteo.">
+  <title>App de Clima | Previsão do Tempo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+  <div class="app-container">
+    <header class="app-header">
+      <div class="logo">
+        <span class="logo-icon" aria-hidden="true">⛅</span>
+        <h1>Previsão do Tempo</h1>
+      </div>
+      <p class="tagline">Consulte o clima atual e a previsão para os próximos 5 dias</p>
+    </header>
+
+    <main class="app-main">
+      <!-- Formulário de Busca -->
+      <section class="search-section" aria-label="Busca de localidade">
+        <form id="search-form" class="search-form" novalidate>
+          <label for="city-input" class="sr-only">Nome da cidade</label>
+          <div class="input-wrapper">
+            <span class="search-icon" aria-hidden="true">🔍</span>
+            <input
+              type="text"
+              id="city-input"
+              name="city"
+              placeholder="Ex: São Paulo, Lisboa, Tóquio..."
+              autocomplete="off"
+              required
+            >
+          </div>
+          <button type="submit" id="search-btn" class="btn-primary">
+            <span class="btn-text">Buscar</span>
+          </button>
+        </form>
+      </section>
+
+      <!-- Feedback e Estados Visuais (Avisos, Loading e Erros) -->
+      <section id="feedback-region" aria-label="Status e avisos" class="feedback-region">
+        <div id="status-message" role="status" aria-live="polite" class="status-box empty-state">
+          <span class="status-icon" aria-hidden="true">📍</span>
+          <p class="status-title">Pesquise uma cidade</p>
+          <p class="status-desc">Digite o nome de uma localidade acima para ver a previsão meteorológica.</p>
+        </div>
+      </section>
+
+      <!-- Container do Clima (Inicialmente oculto) -->
+      <section id="weather-section" class="weather-section hidden" aria-label="Resultado meteorológico">
+        <!-- Card de Clima Atual -->
+        <article class="current-weather-card">
+          <div class="current-header">
+            <div>
+              <h2 id="current-city" class="city-title">São Paulo, Brasil</h2>
+              <p id="current-date" class="date-subtitle">Segunda-feira, 12 de Novembro</p>
+            </div>
+            <span id="current-icon" class="current-weather-icon" role="img" aria-label="Condição do tempo">☀️</span>
+          </div>
+
+          <div class="current-body">
+            <div class="current-temperature">
+              <span id="current-temp" class="temp-number">24</span>
+              <span class="temp-unit">°C</span>
+            </div>
+            <p id="current-condition" class="condition-label">Céu limpo</p>
+          </div>
+
+          <div class="current-metrics" aria-label="Métricas detalhadas do clima">
+            <div class="metric-item">
+              <span class="metric-icon" aria-hidden="true">💧</span>
+              <div class="metric-info">
+                <span class="metric-label">Umidade</span>
+                <span id="current-humidity" class="metric-value">65%</span>
+              </div>
+            </div>
+            <div class="metric-item">
+              <span class="metric-icon" aria-hidden="true">💨</span>
+              <div class="metric-info">
+                <span class="metric-label">Vento</span>
+                <span id="current-wind" class="metric-value">12 km/h</span>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Previsão dos Próximos 5 Dias -->
+        <section class="forecast-section" aria-label="Previsão para os próximos 5 dias">
+          <h3 class="forecast-title">Previsão dos próximos 5 dias</h3>
+          <div id="forecast-grid" class="forecast-grid">
+            <!-- Cards gerados dinamicamente via JavaScript -->
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      <p>Dados fornecidos por <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a> sob licença <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a>.</p>
+    </footer>
+  </div>
+
+  <script type="module" src="./js/main.js"></script>
+</body>
+</html>
