@@ -4,7 +4,7 @@
  */
 
 import { searchCity, getWeather } from './api.js';
-import { showLoading, showError, renderCurrentWeather } from './ui.js';
+import { showLoading, showError, renderWeatherData } from './ui.js';
 
 const searchForm = document.getElementById('search-form');
 const cityInput = document.getElementById('city-input');
@@ -26,7 +26,7 @@ export async function handleSearch(cityName) {
     const location = await searchCity(query);
     const weather = await getWeather(location.latitude, location.longitude);
 
-    renderCurrentWeather(location, weather.current);
+    renderWeatherData(location, weather);
   } catch (error) {
     showError(error.message);
   }

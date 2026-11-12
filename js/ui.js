@@ -3,7 +3,12 @@
  * Controla os estados de feedback (vazio, carregando, erro) e renderização do clima.
  */
 
-import { getWeatherCondition, roundTemperature, formatCurrentDate } from './utils.js';
+import {
+  getWeatherCondition,
+  roundTemperature,
+  formatCurrentDate,
+  formatForecastDate
+} from './utils.js';
 
 // Cache de elementos do DOM
 const elements = {
@@ -115,12 +120,6 @@ export function formatLocationName(location) {
  * @param {{ temperature: number, humidity: number, windSpeed: number, weatherCode: number }} current
  */
 export function renderCurrentWeather(location, current) {
-  setSearchDisabled(false);
-
-  // Oculta feedback e revela seção de clima
-  elements.feedbackRegion.classList.add('hidden');
-  elements.weatherSection.classList.remove('hidden');
-
   // Localização e Data
   elements.currentCity.textContent = formatLocationName(location);
   elements.currentDate.textContent = formatCurrentDate();
@@ -135,4 +134,58 @@ export function renderCurrentWeather(location, current) {
   elements.currentTemp.textContent = roundTemperature(current.temperature);
   elements.currentHumidity.textContent = `${Math.round(current.humidity)}%`;
   elements.currentWind.textContent = `${Math.round(current.windSpeed)} km/h`;
+}
+
+/**
+ * Renderiza a lista de cards com a previsão dos próximos 5 dias.
+ * @param {Array<{ date: string, weatherCode: number, tempMax: number, tempMin: number }>} dailyForecasts
+ */
+export function renderForecast(dailyForecasts) {
+  if (!elements.forecastGrid) return;
+
+  if (!dailyForecasts || dailyForecasts.length === 0) {
+    elements.forecastGrid.innerHTML = '<p class="status-desc">Previsão estendida indisponível.</p>';
+    return;
+  }
+
+  const cardsHtml = dailyForecasts.map((day) => {
+    const { weekday, date } = formatForecastDate(day.date);
+    const condition = getWeatherCondition(day.weatherCode);
+    const maxTemp = roundTemperature(day.tempMax);
+    const minTemp = roundTemperature(day.tempMin);
+
+    return `
+      <article class="forecast-card" aria-label="Previsão para ${weekday}, ${date}">
+        <span class="forecast-day">${weekday}</span>
+        <span class="forecast-date">${date}</span>
+        <span class="forecast-icon" role="img" aria-label="${condition.description}">${condition.icon}</span>
+        <span class="forecast-condition">${condition.description}</span>
+        <div class="forecast-temps">
+          <span class="temp-max" title="Temperatura máxima">${maxTemp}°</span>
+          <span class="temp-min" title="Temperatura mínima">${minTemp}°</span>
+        </div>
+      </article>
+    `;
+  }).join('');
+
+  elements.forecastGrid.innerHTML = cardsHtml;
+}
+
+/**
+ * Renderiza todos os dados climáticos (atual + previsão estendida).
+ * @param {{ name: string, country: string, admin1: string }} location
+ * @param {{
+ *   current: { temperature: number, humidity: number, windSpeed: number, weatherCode: number },
+ *   daily: Array<{ date: string, weatherCode: number, tempMax: number, tempMin: number }>
+ * }} weather
+ */
+export function renderWeatherData(location, weather) {
+  setSearchDisabled(false);
+
+  // Oculta área de feedback e revela a seção com o clima
+  elements.feedbackRegion.classList.add('hidden');
+  elements.weatherSection.classList.remove('hidden');
+
+  renderCurrentWeather(location, weather.current);
+  renderForecast(weather.daily);
 }
