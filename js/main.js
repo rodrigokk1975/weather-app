@@ -1,10 +1,11 @@
 /**
  * main.js - Orquestrador principal da aplicação.
- * Conecta eventos de formulário às chamadas da API e renderização de UI.
+ * Conecta eventos de formulário, persistência local, chamadas da API e renderização de UI.
  */
 
 import { searchCity, getWeather } from './api.js';
-import { showLoading, showError, renderWeatherData } from './ui.js';
+import { showLoading, showError, renderWeatherData, showEmptyState } from './ui.js';
+import { saveLastCity, getLastCity } from './storage.js';
 
 const searchForm = document.getElementById('search-form');
 const cityInput = document.getElementById('city-input');
@@ -27,8 +28,30 @@ export async function handleSearch(cityName) {
     const weather = await getWeather(location.latitude, location.longitude);
 
     renderWeatherData(location, weather);
+    saveLastCity(location.name);
+
+    if (cityInput) {
+      cityInput.value = location.name;
+    }
   } catch (error) {
     showError(error.message);
+  }
+}
+
+/**
+ * Inicializa a aplicação ao carregar a página.
+ * Restaura a última cidade pesquisada ou apresenta o estado inicial.
+ */
+export function initApp() {
+  const lastCity = getLastCity();
+
+  if (lastCity) {
+    if (cityInput) {
+      cityInput.value = lastCity;
+    }
+    handleSearch(lastCity);
+  } else {
+    showEmptyState();
   }
 }
 
@@ -39,4 +62,11 @@ if (searchForm) {
     const cityName = cityInput ? cityInput.value : '';
     handleSearch(cityName);
   });
+}
+
+// Inicialização automática no carregamento do DOM
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initApp);
+} else {
+  initApp();
 }

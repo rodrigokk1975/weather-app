@@ -14,7 +14,8 @@
 - [x] **Etapa 3:** Integração da API Open-Meteo com tratamento de erros.
 - [x] **Etapa 4:** Gerenciamento de estados de UI e exibição do clima atual.
 - [x] **Etapa 5:** Renderização da previsão de 5 dias.
-- [ ] **Etapa 6:** Persistência no localStorage.
+- [x] **Etapa 6:** Persistência no localStorage.
+- [ ] **Etapa 7:** Testes automatizados com `node:test`.
 - [ ] **Etapa 6:** Persistência no localStorage.
 - [ ] **Etapa 7:** Testes automatizados com `node:test`.
 - [ ] **Etapa 8:** Finalização da documentação e atribuição de dados.
