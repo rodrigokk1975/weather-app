@@ -39,6 +39,9 @@ export const WMO_WEATHER_CODES = {
  * @returns {{ description: string, icon: string }}
  */
 export function getWeatherCondition(code) {
+  if (code === null || code === undefined || code === '' || typeof code === 'boolean') {
+    return { description: 'Condição desconhecida', icon: '🌡️' };
+  }
   const numericCode = Number(code);
   if (!Number.isNaN(numericCode) && WMO_WEATHER_CODES[numericCode]) {
     return WMO_WEATHER_CODES[numericCode];
