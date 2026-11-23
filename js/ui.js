@@ -9,13 +9,11 @@ import {
   formatCurrentDate,
   formatForecastDate
 } from './utils.js';
+import { getWeatherVisual } from './icons.js';
 
-// Cache de elementos do DOM
 const elements = {
   feedbackRegion: document.getElementById('feedback-region'),
-  statusMessage: document.getElementById('status-message'),
   weatherSection: document.getElementById('weather-section'),
-  searchForm: document.getElementById('search-form'),
   cityInput: document.getElementById('city-input'),
   searchBtn: document.getElementById('search-btn'),
 
@@ -32,6 +30,27 @@ const elements = {
   forecastGrid: document.getElementById('forecast-grid')
 };
 
+const QUICK_CITIES = ['São Paulo', 'Lisboa', 'Tóquio'];
+
+/**
+ * Escapa caracteres HTML para evitar injeção ao renderizar texto dinâmico.
+ * @param {string} text
+ * @returns {string}
+ */
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+/**
+ * Atualiza o tema atmosférico sutil da página.
+ * @param {string} theme
+ */
+function setWeatherTheme(theme = 'default') {
+  document.body.dataset.weather = theme;
+}
+
 /**
  * Habilita ou desabilita os controles de busca durante requisições.
  * @param {boolean} disabled
@@ -46,20 +65,27 @@ function setSearchDisabled(disabled) {
  */
 export function showEmptyState() {
   setSearchDisabled(false);
+  setWeatherTheme('default');
   elements.weatherSection.classList.add('hidden');
   elements.feedbackRegion.classList.remove('hidden');
 
+  const chipsHtml = QUICK_CITIES.map(
+    (city) => `<button type="button" class="city-chip" data-city="${city}">${city}</button>`
+  ).join('');
+
   elements.feedbackRegion.innerHTML = `
-    <div id="status-message" role="status" aria-live="polite" class="status-box empty-state">
-      <span class="status-icon" aria-hidden="true">📍</span>
-      <p class="status-title">Pesquise uma cidade</p>
-      <p class="status-desc">Digite o nome de uma localidade acima para ver a previsão meteorológica.</p>
+    <div id="status-message" role="status" aria-live="polite" class="status-panel empty-state">
+      <p class="status-title">Consulte o tempo em qualquer cidade</p>
+      <p class="status-desc">Digite o nome acima ou escolha um destino para começar.</p>
+      <div class="quick-cities" aria-label="Sugestões de cidades">
+        ${chipsHtml}
+      </div>
     </div>
   `;
 }
 
 /**
- * Exibe o estado de carregamento com spinner e desabilita nova submissão.
+ * Exibe o estado de carregamento e desabilita nova submissão.
  * @param {string} [cityName='']
  */
 export function showLoading(cityName = '') {
@@ -67,15 +93,13 @@ export function showLoading(cityName = '') {
   elements.weatherSection.classList.add('hidden');
   elements.feedbackRegion.classList.remove('hidden');
 
-  const message = cityName
-    ? `Buscando previsão meteorológica para <strong>${cityName}</strong>...`
-    : 'Consultando serviço meteorológico...';
+  const safeCity = escapeHtml(cityName);
+  const label = safeCity ? `Buscando ${safeCity}...` : 'Carregando previsão...';
 
   elements.feedbackRegion.innerHTML = `
-    <div id="status-message" role="status" aria-live="polite" class="status-box">
+    <div id="status-message" role="status" aria-live="polite" class="status-panel loading-state">
       <div class="spinner" aria-hidden="true"></div>
-      <p class="status-title">Carregando dados</p>
-      <p class="status-desc">${message}</p>
+      <p class="status-desc">${label}</p>
     </div>
   `;
 }
@@ -86,20 +110,22 @@ export function showLoading(cityName = '') {
  */
 export function showError(errorMessage) {
   setSearchDisabled(false);
+  setWeatherTheme('default');
   elements.weatherSection.classList.add('hidden');
   elements.feedbackRegion.classList.remove('hidden');
 
+  const safeMessage = escapeHtml(errorMessage || 'Ocorreu um erro inesperado.');
+
   elements.feedbackRegion.innerHTML = `
-    <div id="status-message" role="alert" aria-live="assertive" class="status-box error-state">
-      <span class="status-icon" aria-hidden="true">⚠️</span>
+    <div id="status-message" role="alert" aria-live="assertive" class="status-panel error-state">
       <p class="status-title">Não foi possível carregar</p>
-      <p class="status-desc">${errorMessage}</p>
+      <p class="status-desc">${safeMessage}</p>
     </div>
   `;
 }
 
 /**
- * Formata o nome completo da localidade (Cidade, Estado - País).
+ * Formata o nome completo da localidade (Cidade, Estado, País).
  * @param {{ name: string, country: string, admin1: string }} location
  * @returns {string}
  */
@@ -120,55 +146,73 @@ export function formatLocationName(location) {
  * @param {{ temperature: number, humidity: number, windSpeed: number, weatherCode: number }} current
  */
 export function renderCurrentWeather(location, current) {
-  // Localização e Data
   elements.currentCity.textContent = formatLocationName(location);
   elements.currentDate.textContent = formatCurrentDate();
 
-  // Condição meteorológica e ícone
   const condition = getWeatherCondition(current.weatherCode);
-  elements.currentIcon.textContent = condition.icon;
+  const visual = getWeatherVisual(current.weatherCode);
+
+  setWeatherTheme(visual.theme);
+  elements.currentIcon.innerHTML = visual.svg;
   elements.currentIcon.setAttribute('aria-label', condition.description);
   elements.currentCondition.textContent = condition.description;
 
-  // Temperatura e métricas
   elements.currentTemp.textContent = roundTemperature(current.temperature);
   elements.currentHumidity.textContent = `${Math.round(current.humidity)}%`;
   elements.currentWind.textContent = `${Math.round(current.windSpeed)} km/h`;
 }
 
 /**
- * Renderiza a lista de cards com a previsão dos próximos 5 dias.
+ * Renderiza a previsão dos próximos 5 dias com barra proporcional de amplitude térmica.
  * @param {Array<{ date: string, weatherCode: number, tempMax: number, tempMin: number }>} dailyForecasts
  */
 export function renderForecast(dailyForecasts) {
   if (!elements.forecastGrid) return;
 
   if (!dailyForecasts || dailyForecasts.length === 0) {
-    elements.forecastGrid.innerHTML = '<p class="status-desc">Previsão estendida indisponível.</p>';
+    elements.forecastGrid.innerHTML = '<p class="status-desc">Previsão indisponível.</p>';
     return;
   }
 
-  const cardsHtml = dailyForecasts.map((day) => {
+  const validMins = dailyForecasts.map((d) => Number(d.tempMin)).filter((n) => !Number.isNaN(n));
+  const validMaxs = dailyForecasts.map((d) => Number(d.tempMax)).filter((n) => !Number.isNaN(n));
+  const weekMin = validMins.length ? Math.min(...validMins) : 0;
+  const weekMax = validMaxs.length ? Math.max(...validMaxs) : 1;
+  const span = Math.max(weekMax - weekMin, 1);
+
+  const itemsHtml = dailyForecasts.map((day) => {
     const { weekday, date } = formatForecastDate(day.date);
     const condition = getWeatherCondition(day.weatherCode);
+    const visual = getWeatherVisual(day.weatherCode);
     const maxTemp = roundTemperature(day.tempMax);
     const minTemp = roundTemperature(day.tempMin);
 
+    const rawLeft = ((Number(day.tempMin) - weekMin) / span) * 100;
+    const rawRight = ((Number(day.tempMax) - weekMin) / span) * 100;
+    const leftPct = Number.isNaN(rawLeft) ? 0 : Math.max(0, Math.min(88, rawLeft));
+    const widthPct = Number.isNaN(rawRight) ? 100 : Math.max(12, Math.min(100 - leftPct, rawRight - leftPct));
+
     return `
-      <article class="forecast-card" aria-label="Previsão para ${weekday}, ${date}">
-        <span class="forecast-day">${weekday}</span>
-        <span class="forecast-date">${date}</span>
-        <span class="forecast-icon" role="img" aria-label="${condition.description}">${condition.icon}</span>
-        <span class="forecast-condition">${condition.description}</span>
-        <div class="forecast-temps">
-          <span class="temp-max" title="Temperatura máxima">${maxTemp}°</span>
-          <span class="temp-min" title="Temperatura mínima">${minTemp}°</span>
+      <article class="forecast-item" aria-label="${weekday}, ${date}: ${condition.description}, mínima de ${minTemp} graus e máxima de ${maxTemp} graus">
+        <div class="forecast-day-group">
+          <span class="forecast-day">${weekday}</span>
+          <span class="forecast-date">${date}</span>
+        </div>
+        <div class="forecast-icon" role="img" title="${condition.description}" aria-label="${condition.description}">
+          ${visual.svg}
+        </div>
+        <div class="forecast-range">
+          <span class="temp-min" title="Mínima">${minTemp}°</span>
+          <div class="range-track" aria-hidden="true">
+            <span class="range-fill" style="left: ${leftPct.toFixed(1)}%; width: ${widthPct.toFixed(1)}%;"></span>
+          </div>
+          <span class="temp-max" title="Máxima">${maxTemp}°</span>
         </div>
       </article>
     `;
   }).join('');
 
-  elements.forecastGrid.innerHTML = cardsHtml;
+  elements.forecastGrid.innerHTML = itemsHtml;
 }
 
 /**
@@ -182,7 +226,6 @@ export function renderForecast(dailyForecasts) {
 export function renderWeatherData(location, weather) {
   setSearchDisabled(false);
 
-  // Oculta área de feedback e revela a seção com o clima
   elements.feedbackRegion.classList.add('hidden');
   elements.weatherSection.classList.remove('hidden');
 

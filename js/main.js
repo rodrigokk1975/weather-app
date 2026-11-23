@@ -9,6 +9,7 @@ import { saveLastCity, getLastCity } from './storage.js';
 
 const searchForm = document.getElementById('search-form');
 const cityInput = document.getElementById('city-input');
+const feedbackRegion = document.getElementById('feedback-region');
 
 /**
  * Executa a busca e renderização dos dados de clima para uma localidade.
@@ -61,6 +62,16 @@ if (searchForm) {
     event.preventDefault();
     const cityName = cityInput ? cityInput.value : '';
     handleSearch(cityName);
+  });
+}
+
+if (feedbackRegion) {
+  feedbackRegion.addEventListener('click', (event) => {
+    const chip = event.target.closest('[data-city]');
+    if (!chip) return;
+    const city = chip.dataset.city;
+    if (cityInput) cityInput.value = city;
+    handleSearch(city);
   });
 }
 
